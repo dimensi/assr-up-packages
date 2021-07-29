@@ -15,24 +15,19 @@ export function createGitlabApi(config) {
   }
 
   function getApprovalRules(mr) {
-    return api.get(
-      `/projects/${config.gitlabProject}/merge_requests/${mr}/approval_rules`
-    );
+    return api.get(`/projects/${config.gitlabProject}/merge_requests/${mr}/approval_rules`);
   }
 
   async function createMr(branchName, packages) {
     const cleanName = branchName.replace("feature/", "");
     const me = await getMe();
-    const result = await api.post(
-      `/projects/${config.gitlabProject}/merge_requests`,
-      {
-        source_branch: branchName,
-        target_branch: config.targetBranch,
-        title: `feat(${cleanName}): up ${Object.keys(packages).join(", ")}`,
-        assignee_id: me.id,
-        description: `Closes ${cleanName}.`,
-      }
-    );
+    const result = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
+      source_branch: branchName,
+      target_branch: config.targetBranch,
+      title: `feat(${cleanName}): up ${Object.keys(packages).join(", ")}`,
+      assignee_id: me.id,
+      description: `Closes ${cleanName}.`,
+    });
 
     await api.post(
       `/projects/${config.gitlabProject}/merge_requests/${result.iid}/approval_rules`,
@@ -53,14 +48,13 @@ export function createGitlabApi(config) {
         {
           approvals_required: 0,
         }
-      );  
+      );
     }
-    
+
     return `http://gitlab.k8s.alfa.link/alfabank/nodejs/assr/-/merge_requests/${result.iid}`;
   }
 
   return {
-    getMe,
     createMr,
   };
 }

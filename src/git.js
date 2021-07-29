@@ -1,7 +1,7 @@
 import simpleGit from "simple-git/promise.js";
 
-export function createGit(cwd) {
-  const git = simpleGit(cwd);
+export function createGit(config) {
+  const git = simpleGit(config.assrDir);
 
   async function fetchMaster() {
     await git.checkout("master");
@@ -20,18 +20,12 @@ export function createGit(cwd) {
     if ((await git.branchLocal()).all.includes(fullBranchName)) {
       await git.checkout([fullBranchName]);
     } else {
-      await git.raw([
-        "checkout",
-        "-b",
-        fullBranchName,
-        "--no-track",
-        "origin/master",
-      ]);
+      await git.raw(["checkout", "-b", fullBranchName, "--no-track", "origin/master"]);
     }
     return (await git.branch()).current;
   }
 
-  async function commitPackages(packages) {
+  async function commitPackages(jira, packages) {
     await git.commit(
       `feat(${jira}): up ${Object.keys(packages)
         .map((str) => str.replace("@alfabank/", ""))
@@ -41,14 +35,25 @@ export function createGit(cwd) {
   }
 
   async function pushBranch() {
+    let pushResult;
     try {
-      return await git.push();
+      pushResult = await git.push();
     } catch (err) {
-      if (err.message.includes('no upstream branch')) {
-        const branch = (await git.branch()).current
-        return git.push(['--set-upstream', 'origin', branch])
+      if (err.message.includes("no upstream branch")) {
+        const branch = (await git.branch()).current;
+        pushResult = await git.push(["--set-upstream", "origin", branch]);
       }
     }
+
+    if (
+      pushResult.remoteMessages.all
+        .map((str) => str.toLocaleLowerCase())
+        .includes("view merge request")
+    ) {
+      return pushResult.remoteMessages.pullRequestUrl;
+    }
+
+    return null;
   }
 
   return {
@@ -57,5 +62,5 @@ export function createGit(cwd) {
     checkoutBranch,
     commitPackages,
     pushBranch,
-  }
+  };
 }

@@ -9,8 +9,7 @@ dotenv.config();
 function travel(data, cb) {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
-      if (typeof value === "object" && !Array.isArray(value))
-        return [key, travel(value, cb)];
+      if (typeof value === "object" && !Array.isArray(value)) return [key, travel(value, cb)];
       return cb(key, value);
     })
   );
@@ -32,8 +31,6 @@ function addFullPathToRelative(data) {
 }
 
 export function loadConfig() {
-  const data = yaml.load(
-    fs.readFileSync(path.join(getDirname(), "../config.yaml"), "utf-8")
-  );
+  const data = yaml.load(fs.readFileSync(path.join(getDirname(), "../config.yaml"), "utf-8"));
   return addFullPathToRelative(fillWithEnvs(data));
 }

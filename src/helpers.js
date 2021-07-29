@@ -1,9 +1,9 @@
 import { spawn } from "child_process";
-import { dirname  } from "path";
+import { dirname } from "path";
 import { fileURLToPath } from "url";
 
-export function getDirname () {
-  return dirname(fileURLToPath(import.meta.url))
+export function getDirname() {
+  return dirname(fileURLToPath(import.meta.url));
 }
 
 export function asyncSpawn(bin, command, options) {
@@ -18,15 +18,15 @@ export function asyncSpawn(bin, command, options) {
   const process = spawn(bin, command, options);
 
   process.stdout.on("data", (str) => {
-    data += str;
+    data = data + str;
   });
 
   process.stderr.on("data", (str) => {
-    error += str;
+    error = error + str;
   });
 
-  process.on("error", (error) => {
-    error += "\n" + error.message;
+  process.on("error", (err) => {
+    error = error + "\n" + err.message;
   });
 
   process.on("close", (code) => {
@@ -37,37 +37,4 @@ export function asyncSpawn(bin, command, options) {
     }
   });
   return promise;
-}
-
-export async function getLastVersions(packages, cwd) {
-  const versions = Object.fromEntries(
-    await Promise.all(
-      packages.map(async (pkg) => {
-        const result = await asyncSpawn("npm", `v ${pkg} version`.split(" "), {
-          cwd,
-        });
-        return [pkg, result.trim()];
-      })
-    )
-  );
-  return versions;
-}
-
-export function getDiffPackages(packages, installedPackages) {
-  return Object.fromEntries(
-    Object.entries(packages).filter(([name, version]) => {
-      const finded = installedPackages[name];
-      return !finded || finded !== version;
-    })
-  );
-}
-
-export function updatePackages(packages) {
-  return asyncSpawn(
-    "yarn",
-    `up ${Object.entries(packages)
-      .map(([name, version]) => [name, version].join("@"))
-      .join(" ")}`.split(" "),
-    { cwd: config.assrDir }
-  );
 }

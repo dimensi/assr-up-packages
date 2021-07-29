@@ -4,9 +4,6 @@
   "description": "",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "start": "node ./src/index.js"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,5 +12,8 @@
     "dotenv": "^10.0.0",
     "js-yaml": "^4.1.0",
     "simple-git": "^2.41.2"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
   }
 }
