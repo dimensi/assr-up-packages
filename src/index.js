@@ -8,32 +8,15 @@ import {
   getLastVersions,
 } from "./helpers.js";
 import { createGitlabApi } from "./gitlab.js";
-import dotenv from "dotenv";
+import { loadConfig } from "./config.js";
 
-dotenv.config();
+const { config, tasks } = loadConfig();
 
-const config = {
-  assrDir: path.join(process.cwd(), "../assr-2/"),
-  gitlabProject: 366,
-  targetBranch: "master",
-  gitlabBaseURL: 'http://gitlab.k8s.alfa.link/api/v4',
-  gitlabToken: process.env.GITLAB_TOKEN,
-  testerId: 557,
-};
+const { checkoutBranch, commitPackages, fetchMaster, pushBranch } = createGit(
+  config.assrDir
+);
 
-const tasks = {
-  "ALFABANKRU-1": [
-    "@alfabank/atm",
-    "@alfabank/cpas-common",
-    "@alfabank/cpas-offices",
-  ],
-  "ALFABANKRU-2": ["@alfabank/main-header"],
-};
-
-const { checkoutBranch, commitPackages, fetchMaster, git, pushBranch } =
-  createGit(config.assrDir);
-
-const { createMr, test } = createGitlabApi(config);
+const { createMr } = createGitlabApi(config);
 
 console.log("fetch master and update packages to last");
 await fetchMaster();
@@ -45,7 +28,6 @@ for (let [jira, packages] of Object.entries(tasks)) {
   console.log("checkout on new branch: %s", branch);
   console.log("start fetching last versions");
   const packagesWithVersions = await getLastVersions(packages, config.assrDir);
-  console.log(await createMr(branch, packagesWithVersions));
   const { dependencies: installedPackages } = JSON.parse(
     fs.readFileSync(path.join(config.assrDir, "package.json"))
   );

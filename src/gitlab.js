@@ -47,13 +47,15 @@ export function createGitlabApi(config) {
 
     const anyRule = rules.find((rule) => rule.rule_type === "any_approver");
 
-    await api.post(
-      `/projects/${config.gitlabProject}/merge_requests/${result.iid}/approval_rules/${anyRule.id}`,
-      {
-        approvals_required: 0,
-      }
-    );
-
+    if (anyRule) {
+      await api.post(
+        `/projects/${config.gitlabProject}/merge_requests/${result.iid}/approval_rules/${anyRule.id}`,
+        {
+          approvals_required: 0,
+        }
+      );  
+    }
+    
     return `http://gitlab.k8s.alfa.link/alfabank/nodejs/assr/-/merge_requests/${result.iid}`;
   }
 

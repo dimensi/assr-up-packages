@@ -1,0 +1,15 @@
+config:
+  assrDir: "../assr-2/"
+  gitlabProject: 366
+  targetBranch: "master"
+  gitlabBaseURL: "http://gitlab.k8s.alfa.link/api/v4"
+  gitlabToken: ${GITLAB_TOKEN}
+  testerId: 557
+
+tasks:
+  ALFABANKRU-1:
+    - "@alfabank/atm"
+    - "@alfabank/cpas-common"
+    - "@alfabank/cpas-offices"
+  ALFABANKRU-2:
+    - "@alfabank/main-header"

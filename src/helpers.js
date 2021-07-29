@@ -1,4 +1,10 @@
 import { spawn } from "child_process";
+import { dirname  } from "path";
+import { fileURLToPath } from "url";
+
+export function getDirname () {
+  return dirname(fileURLToPath(import.meta.url))
+}
 
 export function asyncSpawn(bin, command, options) {
   let resolve,
