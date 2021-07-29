@@ -14,9 +14,9 @@ dotenv.config();
 
 const config = {
   assrDir: path.join(process.cwd(), "../assr-2/"),
-  gitlabProject: GITLAB_PROJECT,
+  gitlabProject: 366,
   targetBranch: "master",
-  gitlabBaseURL: process.env.GITLAB_BASE_URL,
+  gitlabBaseURL: 'http://gitlab.k8s.alfa.link/api/v4',
   gitlabToken: process.env.GITLAB_TOKEN,
   testerId: 557,
 };
