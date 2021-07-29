@@ -5,8 +5,11 @@
   "main": "index.js",
   "type": "module",
   "keywords": [],
-  "author": "",
+  "author": "Nikita Nafranets <eddimensi@gmail.com>",
   "license": "ISC",
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
   "dependencies": {
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",

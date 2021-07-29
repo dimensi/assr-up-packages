@@ -14,6 +14,7 @@ export function createPackageManager(config) {
         packages.map(async (pkg) => {
           const result = await asyncSpawn("npm", `v ${pkg} version`.split(" "), {
             cwd: config.assrDir,
+            shell: true,
           });
           return [pkg, result.trim()];
         })
