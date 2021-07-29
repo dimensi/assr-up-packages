@@ -12,6 +12,7 @@ import { loadConfig } from "./config.js";
 
 const { config, tasks } = loadConfig();
 
+console.log(config)
 const { checkoutBranch, commitPackages, fetchMaster, pushBranch } = createGit(
   config.assrDir
 );
