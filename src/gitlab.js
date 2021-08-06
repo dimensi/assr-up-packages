@@ -25,11 +25,17 @@ function createTitle(taskName, packages) {
   return title.replace("%s", sentence);
 }
 
-export function createGitlabApi(config) {
+export function createGitlabApi({
+  gitlabBaseURL,
+  gitlabToken,
+  targetBranch,
+  gitlabProject,
+  testerId,
+}) {
   const api = axios.create({
-    baseURL: config.gitlabBaseURL,
+    baseURL: gitlabBaseURL,
     headers: {
-      authorization: `Bearer ${config.gitlabToken}`,
+      authorization: `Bearer ${gitlabToken}`,
     },
   });
 
@@ -40,44 +46,68 @@ export function createGitlabApi(config) {
   }
 
   function getApprovalRules(mr) {
-    return api.get(`/projects/${config.gitlabProject}/merge_requests/${mr}/approval_rules`);
+    return api.get(`/projects/${gitlabProject}/merge_requests/${mr}/approval_rules`);
+  }
+
+  function createApprovalRule({ mrId, name, users }) {
+    return api.post(`/projects/${gitlabProject}/merge_requests/${mrId}/approval_rules`, {
+      name: name,
+      approvals_required: users.length,
+      user_ids: users,
+    });
+  }
+
+  function updateApprovalRule({ mrId, ruleId, users }) {
+    return api.put(`/projects/${gitlabProject}/merge_requests/${mrId}/approval_rules/${ruleId}`, {
+      approvals_required: users.length,
+      ...(users.length && { user_ids: users }),
+    });
+  }
+
+  async function findMrBranch(branchName) {
+    const result = await api.get(`/projects/${gitlabProject}/merge_requests`, {
+      params: {
+        source_branch: branchName,
+        target_branch: targetBranch,
+      },
+    });
+    return result[0] ?? null;
   }
 
   async function createMr(branchName, packages) {
     const cleanName = branchName.replace("feature/", "");
     const me = await getMe();
+    let mr = await findMrBranch(branchName);
+    console.log("title", createTitle(cleanName, packages));
+    if (!mr) {
+      mr = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
+        source_branch: branchName,
+        target_branch: config.targetBranch,
+        title: createTitle(cleanName, packages),
+        assignee_id: me.id,
+        description: `Closes ${cleanName}.`,
+        remove_source_branch: true,
+        squash: true,
+      });
+    }
 
-    const result = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
-      source_branch: branchName,
-      target_branch: config.targetBranch,
-      title: createTitle(cleanName, packages),
-      assignee_id: me.id,
-      description: `Closes ${cleanName}.`,
-    });
-
-    await api.post(
-      `/projects/${config.gitlabProject}/merge_requests/${result.iid}/approval_rules`,
-      {
-        name: "QA",
-        approvals_required: 1,
-        user_ids: [config.testerId],
-      }
-    );
-
-    const rules = await getApprovalRules(result.iid);
+    const rules = await getApprovalRules(mr.iid);
 
     const anyRule = rules.find((rule) => rule.rule_type === "any_approver");
 
     if (anyRule) {
-      await api.post(
-        `/projects/${config.gitlabProject}/merge_requests/${result.iid}/approval_rules/${anyRule.id}`,
-        {
-          approvals_required: 0,
-        }
-      );
+      await updateApprovalRule({ mrId: mr.iid, ruleId: anyRule.id, users: [] });
     }
 
-    return `http://gitlab.k8s.alfa.link/alfabank/nodejs/assr/-/merge_requests/${result.iid}`;
+    const qaRule = rules.find((rule) => rule.name === "QA");
+
+    if (qaRule) {
+      await updateApprovalRule({ mrId: mr.iid, ruleId: qaRule.id, users: [testerId] });
+    } else {
+      await createApprovalRule({ mrId: mr.iid, name: "QA", users: [testerId] });
+    }
+
+    return mr.web_url;
   }
 
   return {

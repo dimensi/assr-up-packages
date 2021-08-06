@@ -22,6 +22,7 @@ npm ci
 GITLAB_TOKEN=TOKEN(взять можно из профиля в гитлабе)
 ```
 
+Скопировать `config.example.yaml` в `config.yaml`.
 Поменять в `config.yaml` в объекте `tasks` содержимое на нужное. Поменять в объекте `config`, путь до assr.
 
 Запустить `npm start`. Ждать результатов.

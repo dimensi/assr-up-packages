@@ -1,19 +1,19 @@
 import simpleGit from "simple-git/promise.js";
 
-export function createGit(config) {
-  const git = simpleGit(config.assrDir);
+export function createGit({ assrDir, targetBranch }) {
+  const git = simpleGit(assrDir);
 
-  async function fetchMaster() {
-    await git.checkout("master");
-    await git.fetch("origin", "master");
+  async function fetchTargetBranch() {
+    await git.checkout(targetBranch);
+    await git.fetch("origin", targetBranch);
     await git.pull();
   }
 
   async function checkoutBranch(branchName) {
     const fullBranchName = `feature/${branchName}`;
     const branch = await git.branch();
-    if (branch.current !== "master") {
-      await git.fetch("origin", "master:master");
+    if (branch.current !== targetBranch) {
+      await git.fetch("origin", `${targetBranch}:${targetBranch}`);
     } else {
       await git.pull();
     }
@@ -58,7 +58,7 @@ export function createGit(config) {
 
   return {
     git,
-    fetchMaster,
+    fetchTargetBranch,
     checkoutBranch,
     commitPackages,
     pushBranch,
