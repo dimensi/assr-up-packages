@@ -78,7 +78,7 @@ export function createGitlabApi({
     const cleanName = branchName.replace("feature/", "");
     const me = await getMe();
     let mr = await findMrBranch(branchName);
-    console.log("title", createTitle(cleanName, packages));
+    
     if (!mr) {
       mr = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
         source_branch: branchName,
