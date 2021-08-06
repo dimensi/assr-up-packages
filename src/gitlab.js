@@ -1,5 +1,30 @@
 import axios from "axios";
 
+const LIMIT_TITLE = 255;
+
+function createTitle(taskName, packages) {
+  const title = `feat(${taskName}): up %s`;
+  const titles = Object.keys(packages).map((str) => str.replace("@alfabank/", ""));
+  const joinStr = ", ";
+  const etcStr = " and etc";
+  let sentence = "";
+  for (const pkgName of titles) {
+    if (
+      sentence.length + pkgName.length + joinStr.length + etcStr.length >
+      LIMIT_TITLE - title.length
+    ) {
+      sentence += etcStr;
+      break;
+    }
+    if (sentence.length === 0) {
+      sentence += pkgName;
+    } else {
+      sentence += joinStr + pkgName;
+    }
+  }
+  return title.replace("%s", sentence);
+}
+
 export function createGitlabApi(config) {
   const api = axios.create({
     baseURL: config.gitlabBaseURL,
@@ -21,10 +46,11 @@ export function createGitlabApi(config) {
   async function createMr(branchName, packages) {
     const cleanName = branchName.replace("feature/", "");
     const me = await getMe();
+
     const result = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
       source_branch: branchName,
       target_branch: config.targetBranch,
-      title: `feat(${cleanName}): up ${Object.keys(packages).join(", ")}`,
+      title: createTitle(cleanName, packages),
       assignee_id: me.id,
       description: `Closes ${cleanName}.`,
     });
