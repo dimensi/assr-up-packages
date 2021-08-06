@@ -25,21 +25,18 @@ for (let [jira, packages] of Object.entries(tasks)) {
   const diff = getDiffPackages(packagesWithVersions, installedPackages);
 
   console.log("get packages on update", diff);
-  if (Object.keys(diff).length === 0) {
-    console.log("nothing to update");
-    continue;
-  }
-
-  console.log("start update packages");
-  await updatePackages(diff);
-  console.log("done update. commit changes");
-  await commitPackages(jira, diff);
-  console.log("done commit");
-  const pushResult = await pushBranch();
-  console.log("done push");
-  if (pushResult) {
-    console.log("mr already created, look here: %s", pushResult);
-    continue;
+  if (Object.keys(diff).length > 0) {
+    console.log("start update packages");
+    await updatePackages(diff);
+    console.log("done update. commit changes");
+    await commitPackages(jira, diff);
+    console.log("done commit");
+    const pushResult = await pushBranch();
+    console.log("done push");
+    if (pushResult) {
+      console.log("mr already created, look here: %s", pushResult);
+      continue;
+    }
   }
   console.log("start create mr");
   const mrLink = await createMr(branch, diff);
