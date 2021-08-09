@@ -75,7 +75,7 @@ export function createGitlabApi({
   }
 
   async function createMr(branchName, packages) {
-    const cleanName = branchName.replace("feature/", "");
+    const jiraTaskName = branchName.replace("feature/", "");
     const me = await getMe();
     let mr = await findMrBranch(branchName);
     
@@ -83,9 +83,9 @@ export function createGitlabApi({
       mr = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
         source_branch: branchName,
         target_branch: config.targetBranch,
-        title: createTitle(cleanName, packages),
+        title: createTitle(jiraTaskName, packages),
         assignee_id: me.id,
-        description: `Closes ${cleanName}.`,
+        description: `## Задача\n\n Обновление пакетов\n\n${packages.map(p => `- ${p}`)}\n\nCloses ${jiraTaskName}`,
         remove_source_branch: true,
         squash: true,
       });
