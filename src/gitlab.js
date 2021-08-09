@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const LIMIT_TITLE = 255;
+const LIMIT_TITLE = 120;
 
 function createTitle(taskName, packages) {
   const title = `feat(${taskName}): up %s`;
@@ -23,6 +23,17 @@ function createTitle(taskName, packages) {
     }
   }
   return title.replace("%s", sentence);
+}
+
+function createDescription(taskName, packages) {
+  return [
+    `## Задача`,
+    "Обновление пакетов",
+    Object.keys(packages)
+      .map((p) => `- ${p}`)
+      .join("\n"),
+    `Closes ${taskName}`,
+  ].join("\n\n");
 }
 
 export function createGitlabApi({
@@ -75,17 +86,17 @@ export function createGitlabApi({
   }
 
   async function createMr(branchName, packages) {
-    const cleanName = branchName.replace("feature/", "");
+    const jiraTaskName = branchName.replace("feature/", "");
     const me = await getMe();
     let mr = await findMrBranch(branchName);
-    
+
     if (!mr) {
       mr = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
         source_branch: branchName,
         target_branch: config.targetBranch,
-        title: createTitle(cleanName, packages),
+        title: createTitle(jiraTaskName, packages),
         assignee_id: me.id,
-        description: `Closes ${cleanName}.`,
+        description: createDescription(jiraTaskName, packages),
         remove_source_branch: true,
         squash: true,
       });
