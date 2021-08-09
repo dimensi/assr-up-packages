@@ -25,6 +25,17 @@ function createTitle(taskName, packages) {
   return title.replace("%s", sentence);
 }
 
+function createDescription(taskName, packages) {
+  return [
+    `## Задача`,
+    "Обновление пакетов",
+    Object.keys(packages)
+      .map((p) => `- ${p}`)
+      .join("\n"),
+    `Closes ${taskName}`,
+  ].join("\n\n");
+}
+
 export function createGitlabApi({
   gitlabBaseURL,
   gitlabToken,
@@ -78,14 +89,14 @@ export function createGitlabApi({
     const jiraTaskName = branchName.replace("feature/", "");
     const me = await getMe();
     let mr = await findMrBranch(branchName);
-    
+
     if (!mr) {
       mr = await api.post(`/projects/${config.gitlabProject}/merge_requests`, {
         source_branch: branchName,
         target_branch: config.targetBranch,
         title: createTitle(jiraTaskName, packages),
         assignee_id: me.id,
-        description: `## Задача\n\n Обновление пакетов\n\n${packages.map(p => `- ${p}`)}\n\nCloses ${jiraTaskName}`,
+        description: createDescription(jiraTaskName, packages),
         remove_source_branch: true,
         squash: true,
       });
