@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const LIMIT_TITLE = 255;
+const LIMIT_TITLE = 120;
 
 function createTitle(taskName, packages) {
   const title = `feat(${taskName}): up %s`;
