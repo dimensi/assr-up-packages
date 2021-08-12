@@ -90,10 +90,6 @@ export function createGitlabApi({
     const me = await getMe();
     let mr = await findMrBranch(branchName);
 
-    console.log(
-      createTitle(jiraTaskName, packages),
-      createDescription(jiraTaskName, packages)
-    )
     if (!mr) {
       mr = await api.post(`/projects/${gitlabProject}/merge_requests`, {
         source_branch: branchName,
