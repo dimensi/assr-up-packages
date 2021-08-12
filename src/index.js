@@ -40,6 +40,6 @@ for (let [jira, packages] of Object.entries(tasks)) {
   }
 
   console.log("start create mr");
-  const mrLink = await createMr(branch, diff);
+  const mrLink = await createMr(branch, packagesWithVersions);
   console.log("done with create mr: %s", mrLink);
 }
